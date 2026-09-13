@@ -1,0 +1,6 @@
+{
+  "name": "As Belezas do Uzbequistão - Feira das Nações 2026",
+  "description": "Portal interativo sobre as belezas do Uzbequistão na Feira Cultural Gastronômica Copa do Mundo 2026 com painel de controle para vídeos, integrantes e conteúdos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

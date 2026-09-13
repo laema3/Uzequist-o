@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="100%">
+  <defs>
+    <!-- Estrela branca de 5 pontas -->
+    <polygon
+      id="star"
+      points="0,-6.5 1.9,-2 6.5,-2 2.8,0.9 4.1,5.5 0,2.6 -4.1,5.5 -2.8,0.9 -6.5,-2 -1.9,-2"
+      fill="#ffffff"
+    />
+    <!-- Mascara do crescente lunar -->
+    <mask id="crescent">
+      <rect x="0" y="0" width="600" height="300" fill="#ffffff" />
+      <circle cx="106" cy="48" r="28" fill="#000000" />
+    </mask>
+  </defs>
+
+  <!-- Faixa 1: Azul-celeste -->
+  <rect x="0" y="0" width="600" height="96" fill="#0099b5" />
+
+  <!-- Filete vermelho superior -->
+  <rect x="0" y="96" width="600" height="6" fill="#ce1126" />
+
+  <!-- Faixa 2: Branco -->
+  <rect x="0" y="102" width="600" height="96" fill="#ffffff" />
+
+  <!-- Filete vermelho inferior -->
+  <rect x="0" y="198" width="600" height="6" fill="#ce1126" />
+
+  <!-- Faixa 3: Verde -->
+  <rect x="0" y="204" width="600" height="96" fill="#1eb53a" />
+
+  <!-- Lua Crescente branca -->
+  <circle cx="92" cy="48" r="32" fill="#ffffff" mask="url(#crescent)" />
+
+  <!-- 12 Estrelas brancas em 3 fileiras -->
+  <!-- Linha superior (3 estrelas) -->
+  <use href="#star" x="180" y="24" />
+  <use href="#star" x="204" y="24" />
+  <use href="#star" x="228" y="24" />
+
+  <!-- Linha do meio (4 estrelas) -->
+  <use href="#star" x="156" y="48" />
+  <use href="#star" x="180" y="48" />
+  <use href="#star" x="204" y="48" />
+  <use href="#star" x="228" y="48" />
+
+  <!-- Linha inferior (5 estrelas) -->
+  <use href="#star" x="132" y="72" />
+  <use href="#star" x="156" y="72" />
+  <use href="#star" x="180" y="72" />
+  <use href="#star" x="204" y="72" />
+  <use href="#star" x="228" y="72" />
+</svg>

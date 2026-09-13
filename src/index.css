@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+html {
+  font-size: 18px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  background-color: #f4f9fd;
+}
