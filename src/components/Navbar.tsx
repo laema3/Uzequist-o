@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Globe,
   Settings,
@@ -13,7 +13,10 @@ import {
   MessageSquare,
   HelpCircle,
   Lightbulb,
-  Phone
+  Phone,
+  Smartphone,
+  Tablet,
+  Monitor
 } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 
@@ -21,10 +24,35 @@ export const Navbar: React.FC = () => {
   const {
     currentView,
     setCurrentView,
+    deviceMode,
+    setDeviceMode,
     profile
   } = useProject();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('#inicio');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = navItems.map(item => item.href.replace('#', ''));
+      const scrollPosition = window.scrollY + 220;
+
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection('#' + sectionId);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navItems = [
     { label: 'Início', href: '#inicio', id: 'nav-item-inicio' },
@@ -36,6 +64,7 @@ export const Navbar: React.FC = () => {
   ];
 
   const handleNavClick = (href: string) => {
+    setActiveSection(href);
     setMobileMenuOpen(false);
     if (currentView !== 'visitor') {
       setCurrentView('visitor');
@@ -55,43 +84,29 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#f8fcff] border-b border-sky-200 shadow-xs">
+    <header className="sticky top-0 z-50 bg-[#061d30] border-b border-sky-900 text-slate-100 shadow-md w-full overflow-hidden">
       {/* Top Institutional Strip with Uzbekistan Flag Colors */}
-      <div className="bg-[#082a45] text-sky-200 text-sm py-2 px-4 sm:px-8 border-b border-sky-950">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-4 text-center sm:text-left">
-          <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-sky-500 text-white uppercase tracking-wider">
-              {profile.event}
-            </span>
-            <span className="font-semibold text-slate-100 text-sm sm:text-base">
-              {profile.turma} • Estande Oficial: {profile.country}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs sm:text-sm text-sky-300">
-            <span className="hidden md:inline">Local: Bancada 8° B — Pátio Principal</span>
-            <button
-              id="top-admin-quick-link"
-              onClick={() => setCurrentView(currentView === 'visitor' ? 'admin' : 'visitor')}
-              className="text-amber-400 hover:text-amber-300 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer text-xs sm:text-sm"
-            >
-              <Settings className="w-4 h-4" />
-              <span>{currentView === 'visitor' ? 'Área Administrativa' : 'Voltar ao Site'}</span>
-            </button>
-          </div>
+      <div className="bg-[#04121d] text-sky-200 text-[11px] sm:text-xs py-1.5 px-3 sm:px-6 border-b border-sky-950">
+        <div className="max-w-7xl mx-auto flex items-center justify-center sm:justify-start gap-2 text-center sm:text-left">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-sky-600 text-white uppercase tracking-wider">
+            {profile.event}
+          </span>
+          <span className="font-semibold text-slate-200 text-[11px] sm:text-xs truncate">
+            {profile.turma} • Estande Oficial: {profile.country}
+          </span>
         </div>
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-22">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-2">
           {/* Brand / Logo */}
           <div
             id="brand-logo"
             onClick={() => handleNavClick('#inicio')}
-            className="flex items-center gap-3.5 cursor-pointer group shrink-0"
+            className="flex items-center gap-2.5 sm:gap-3.5 cursor-pointer group min-w-0 flex-1 sm:flex-initial"
           >
-            <div className="relative w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-sky-300 bg-white flex items-center justify-center shadow-xs group-hover:border-sky-500 transition-colors shrink-0">
+            <div className="relative w-11 h-8 sm:w-14 sm:h-9 rounded-lg overflow-hidden border border-sky-700 bg-slate-800 flex items-center justify-center shadow-xs group-hover:border-red-500 transition-colors shrink-0">
               <img
                 src={profile.logoUrl || '/assets/uzbek_flag.svg'}
                 alt="Bandeira do Uzbequistão"
@@ -100,69 +115,57 @@ export const Navbar: React.FC = () => {
               />
             </div>
 
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="text-lg sm:text-xl font-black tracking-tight text-slate-900 group-hover:text-amber-700 transition-colors">
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-sm sm:text-lg font-black tracking-tight text-white group-hover:text-red-400 transition-colors truncate">
                   {profile.name}
                 </span>
-                <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-sky-950 text-sky-200 border border-sky-800 shrink-0">
                   {profile.turma}
                 </span>
               </div>
-              <span className="text-sm text-slate-500 font-medium tracking-wide">
+              <span className="text-[11px] sm:text-xs text-sky-300 font-medium tracking-wide truncate">
                 {profile.subtitle}
               </span>
             </div>
           </div>
 
-          {/* Desktop Navigation Links (Clean standard top menu: Início, Opções, Assuntos, Dicas, Integrantes, Contato) */}
-          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-3">
-            {navItems.map(item => (
-              <button
-                key={item.label}
-                id={item.id}
-                onClick={() => handleNavClick(item.href)}
-                className="px-4 py-2.5 text-base font-bold text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition-all cursor-pointer"
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
+          {/* Desktop & Tablet Navigation Links (hidden if in smartphone simulation mode) */}
+          {deviceMode !== 'smartphone' && (
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0">
+              {navItems.map(item => {
+                const isActive = activeSection === item.href;
+                return (
+                  <button
+                    key={item.label}
+                    id={item.id}
+                    onClick={() => handleNavClick(item.href)}
+                    className={`relative px-3 py-2 text-sm font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'text-white font-black'
+                        : 'text-slate-300 hover:text-white hover:bg-sky-900/60 rounded-lg'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {isActive && (
+                      <span className="absolute bottom-1 left-2.5 right-2.5 h-1 bg-red-600 rounded-full animate-in fade-in" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          )}
 
           {/* Actions on the Right */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Toggle View Button */}
-            <button
-              id="btn-admin-toggle"
-              onClick={() => setCurrentView(currentView === 'visitor' ? 'admin' : 'visitor')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm sm:text-base font-bold transition-all cursor-pointer shadow-xs ${
-                currentView === 'visitor'
-                  ? 'bg-slate-900 hover:bg-slate-800 text-white'
-                  : 'bg-teal-700 hover:bg-teal-800 text-white'
-              }`}
-            >
-              {currentView === 'visitor' ? (
-                <>
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Painel de Controle</span>
-                  <span className="sm:hidden">Painel</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-4 h-4" />
-                  <span>Ver Site</span>
-                </>
-              )}
-            </button>
-
-            {/* Mobile Hamburger Toggle */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Mobile Hamburger Toggle (always show if smartphone mode, otherwise lg:hidden) */}
             <button
               id="btn-mobile-menu-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors border border-slate-200"
+              className={`${deviceMode === 'smartphone' ? 'flex' : 'lg:hidden'} p-2 rounded-lg text-slate-200 hover:text-white hover:bg-sky-900 transition-colors border border-sky-800 shrink-0 cursor-pointer`}
               aria-label="Abrir menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -170,21 +173,32 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div id="mobile-navigation-drawer" className="lg:hidden bg-white border-t border-slate-200 px-4 pt-4 pb-6 space-y-1.5 shadow-lg animate-in slide-in-from-top-2 duration-200">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">
+        <div id="mobile-navigation-drawer" className={`${deviceMode === 'smartphone' ? 'block' : 'lg:hidden'} bg-[#061d30] border-t border-sky-900 px-4 pt-4 pb-6 space-y-1.5 shadow-xl animate-in slide-in-from-top-2 duration-200 w-full`}>
+          <div className="text-xs font-bold text-sky-400 uppercase tracking-wider px-3 mb-2">
             Navegação do Site
           </div>
-          {navItems.map(item => (
-            <button
-              key={item.label}
-              id={`mobile-${item.id}`}
-              onClick={() => handleNavClick(item.href)}
-              className="w-full text-left px-4 py-3 rounded-lg text-base font-bold text-slate-800 hover:text-slate-950 hover:bg-slate-100 transition-colors flex items-center justify-between"
-            >
-              <span>{item.label}</span>
-              <span className="text-slate-400 text-sm">→</span>
-            </button>
-          ))}
+          {navItems.map(item => {
+            const isActive = activeSection === item.href;
+            return (
+              <button
+                key={item.label}
+                id={`mobile-${item.id}`}
+                onClick={() => handleNavClick(item.href)}
+                className={`w-full text-left px-4 py-3 rounded-lg text-base font-bold transition-all flex items-center justify-between border-l-4 ${
+                  isActive
+                    ? 'bg-sky-50 text-sky-950 border-sky-600 font-black'
+                    : 'text-slate-700 border-transparent hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <span>{item.label}</span>
+                {isActive ? (
+                  <span className="text-xs font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded">Ativo</span>
+                ) : (
+                  <span className="text-slate-400 text-sm">→</span>
+                )}
+              </button>
+            );
+          })}
 
           <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
             <button

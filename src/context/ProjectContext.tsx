@@ -7,6 +7,10 @@ interface ProjectContextType {
   currentView: 'visitor' | 'admin';
   setCurrentView: (view: 'visitor' | 'admin') => void;
 
+  // Device mode for responsiveness / smartphone preview
+  deviceMode: 'responsive' | 'smartphone' | 'tablet';
+  setDeviceMode: (mode: 'responsive' | 'smartphone' | 'tablet') => void;
+
   // Selected topic for visitor deep-dive
   selectedTopicId: string;
   setSelectedTopicId: (id: string) => void;
@@ -55,6 +59,7 @@ const STORAGE_KEYS = {
 
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentView, setCurrentView] = useState<'visitor' | 'admin'>('visitor');
+  const [deviceMode, setDeviceMode] = useState<'responsive' | 'smartphone' | 'tablet'>('responsive');
   const [selectedTopicId, setSelectedTopicId] = useState<string>('cultura-artesanato');
   const [activeVideoForModal, setActiveVideoForModal] = useState<ProjectVideo | null>(null);
 
@@ -246,6 +251,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       value={{
         currentView,
         setCurrentView,
+        deviceMode,
+        setDeviceMode,
         selectedTopicId,
         setSelectedTopicId,
         activeVideoForModal,
