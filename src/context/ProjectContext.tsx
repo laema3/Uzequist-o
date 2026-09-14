@@ -148,18 +148,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as TeamMember[];
-        return parsed.map(m => {
-          if (m.name.toLowerCase().includes('laura') || m.id === 'm3') {
-            return {
-              ...m,
-              photoFit: undefined,
-              photoUrl: m.photoUrl.includes('photo-1524504388940-b1c1722653e1')
-                ? 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80'
-                : m.photoUrl
-            };
-          }
-          return m;
-        });
+        return parsed;
       } catch (e) {
         console.error(e);
       }

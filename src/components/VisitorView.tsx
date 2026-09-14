@@ -1016,8 +1016,12 @@ export const VisitorView: React.FC = () => {
                   <div className="relative mb-4">
                     <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 border-sky-700/60 bg-sky-950 shadow-xs">
                       <img
+                        key={member.photoUrl}
                         src={member.photoUrl}
                         alt={member.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+                        }}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

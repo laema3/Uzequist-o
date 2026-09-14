@@ -722,8 +722,12 @@ export const AdminPanel: React.FC = () => {
                           }}
                         >
                           <img
+                            key={m.photoUrl}
                             src={m.photoUrl}
                             alt={m.name}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+                            }}
                             className={`w-full h-full object-cover transition-transform duration-300 ${
                               isUploadingThis ? 'opacity-40' : 'group-hover:scale-105'
                             }`}

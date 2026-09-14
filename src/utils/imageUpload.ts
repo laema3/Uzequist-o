@@ -6,9 +6,9 @@
 
 export async function processImageFile(
   file: File,
-  maxWidth = 600,
-  maxHeight = 600,
-  quality = 0.85
+  maxWidth = 400,
+  maxHeight = 400,
+  quality = 0.75
 ): Promise<string> {
   if (!file.type.startsWith('image/')) {
     throw new Error('O arquivo selecionado não é uma imagem válida.');
@@ -24,15 +24,14 @@ export async function processImageFile(
     reader.onload = () => {
       const result = reader.result as string;
 
-      // If SVG or very small image (< 40KB), resolve directly
-      if (file.type === 'image/svg+xml' || file.size < 40 * 1024) {
+      // If SVG resolve directly
+      if (file.type === 'image/svg+xml') {
         resolve(result);
         return;
       }
 
       const img = new Image();
       img.onerror = () => {
-        // Fallback to raw data url if image decode fails
         resolve(result);
       };
 
@@ -61,14 +60,17 @@ export async function processImageFile(
           return;
         }
 
+        // Fill white background for transparent PNGs converted to JPEG
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+
         // Smooth rendering
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
         try {
-          const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-          const compressedDataUrl = canvas.toDataURL(mimeType, quality);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
           resolve(compressedDataUrl);
         } catch {
           resolve(result);
