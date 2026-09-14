@@ -167,21 +167,39 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return INITIAL_TEAM_MEMBERS;
   });
 
+  // Sync with server API on mount
   useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          if (data.profile) setProfile(data.profile);
+          if (data.topics && Array.isArray(data.topics) && data.topics.length > 0) setTopics(data.topics);
+          if (data.videos && Array.isArray(data.videos)) setVideos(data.videos);
+          if (data.members && Array.isArray(data.members) && data.members.length > 0) setMembers(data.members);
+        }
+      })
+      .catch(err => console.log('Using local data fallback', err));
+  }, []);
+
+  // Save to localStorage and sync to server when data changes
+  useEffect(() => {
+    const payload = { profile, topics, videos, members };
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-  }, [profile]);
-
-  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.TOPICS, JSON.stringify(topics));
-  }, [topics]);
-
-  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.VIDEOS, JSON.stringify(videos));
-  }, [videos]);
-
-  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
-  }, [members]);
+
+    const timer = setTimeout(() => {
+      fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => console.error('Failed to sync to server:', err));
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [profile, topics, videos, members]);
 
   // Profile operations
   const updateProfile = (updated: Partial<ProjectProfile>) => {
