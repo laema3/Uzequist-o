@@ -378,7 +378,7 @@ export const VisitorView: React.FC = () => {
       <section id="opcoes" className="py-18 sm:py-24 bg-[#082a45] border-b border-sky-800/60/60 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-sky-800 bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
+            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
               Atividades do Estande
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
@@ -552,7 +552,7 @@ export const VisitorView: React.FC = () => {
       <section id="assuntos" className="py-18 sm:py-24 bg-[#082a45] border-b border-sky-800/60/60 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-teal-800 bg-[#0c2840] px-3.5 py-1 rounded-full border border-teal-200 inline-block mb-3 shadow-xs">
+            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white bg-[#0c2840] px-3.5 py-1 rounded-full border border-teal-200 inline-block mb-3 shadow-xs">
               Pesquisa Escolar 8° B
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
@@ -793,7 +793,7 @@ export const VisitorView: React.FC = () => {
 
           {/* Grade de Todos os Assuntos */}
           <div>
-            <h4 className="text-xl sm:text-2xl font-black text-slate-950 mb-7">
+            <h4 className="text-xl sm:text-2xl font-black text-white mb-7">
               Todos os {topics.length} Assuntos Cadastrados
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -850,7 +850,7 @@ export const VisitorView: React.FC = () => {
       <section id="dicas" className="py-18 sm:py-24 bg-[#082a45] border-b border-sky-800/60/60 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-sky-800 bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
+            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
               Segredos & Tradições
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
@@ -980,7 +980,7 @@ export const VisitorView: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-4">
             <div>
-              <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-sky-800 bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
                 Equipe Escolar
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
@@ -1105,7 +1105,7 @@ export const VisitorView: React.FC = () => {
                   <button
                     id="btn-verificar-quiz"
                     onClick={() => setQuizSubmitted(true)}
-                    className="w-full sm:w-auto px-7 py-3 rounded-xl bg-red-950/50 hover:bg-red-950/50 text-slate-950 font-black text-sm sm:text-base transition-colors cursor-pointer shadow-md"
+                    className="w-full sm:w-auto px-7 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-sm sm:text-base transition-colors cursor-pointer shadow-md"
                   >
                     Verificar Respostas
                   </button>
@@ -1137,7 +1137,7 @@ export const VisitorView: React.FC = () => {
       <section id="contato" className="py-18 sm:py-24 bg-[#082a45] border-b border-sky-800/60/60 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-14">
-            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-sky-800 bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
+            <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white bg-[#0c2840] px-3.5 py-1 rounded-full border border-sky-800/60 inline-block mb-3 shadow-xs">
               Visitação Escolar
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">

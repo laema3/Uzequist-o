@@ -186,21 +186,21 @@ export const Navbar: React.FC = () => {
                 onClick={() => handleNavClick(item.href)}
                 className={`w-full text-left px-4 py-3 rounded-lg text-base font-bold transition-all flex items-center justify-between border-l-4 ${
                   isActive
-                    ? 'bg-sky-50 text-sky-950 border-sky-600 font-black'
-                    : 'text-slate-700 border-transparent hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-sky-950 text-white border-red-500 font-black'
+                    : 'text-white border-transparent hover:bg-sky-900/60 hover:text-white'
                 }`}
               >
                 <span>{item.label}</span>
                 {isActive ? (
-                  <span className="text-xs font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded">Ativo</span>
+                  <span className="text-xs font-bold text-white bg-sky-800 px-2.5 py-0.5 rounded">Ativo</span>
                 ) : (
-                  <span className="text-slate-400 text-sm">→</span>
+                  <span className="text-sky-300 text-sm">→</span>
                 )}
               </button>
             );
           })}
 
-          <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
+          <div className="pt-4 border-t border-sky-900 flex flex-col gap-2">
             <button
               id="mobile-btn-admin-drawer"
               onClick={() => {
