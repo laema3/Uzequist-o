@@ -167,76 +167,118 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return INITIAL_TEAM_MEMBERS;
   });
 
-  // Sync with server API on mount, polling, and window focus
-  useEffect(() => {
-    let lastServerUpdatedAt = '';
+  // Synchronization refs
+  const serverUpdatedAtRef = React.useRef<string | number>('');
+  const isInitialSyncDoneRef = React.useRef<boolean>(false);
 
-    const syncFromServer = (isPolling = false) => {
-      fetch('/api/data')
-        .then(res => res.json())
-        .then(data => {
-          if (data) {
-            // If polling and server updatedAt is newer or different, update state
-            if (!isPolling || (data.updatedAt && data.updatedAt !== lastServerUpdatedAt)) {
-              if (data.updatedAt) lastServerUpdatedAt = data.updatedAt;
-              if (data.profile) setProfile(data.profile);
-              if (data.topics && Array.isArray(data.topics) && data.topics.length > 0) setTopics(data.topics);
-              if (data.videos && Array.isArray(data.videos)) setVideos(data.videos);
-              if (data.members && Array.isArray(data.members) && data.members.length > 0) setMembers(data.members);
-            }
-          }
+  // Helper to save to local storage safely without throwing QuotaExceededError
+  const saveToLocalStorage = (p: ProjectProfile, t: Topic[], v: ProjectVideo[], m: TeamMember[]) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(p));
+      localStorage.setItem(STORAGE_KEYS.TOPICS, JSON.stringify(t));
+      localStorage.setItem(STORAGE_KEYS.VIDEOS, JSON.stringify(v));
+      localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(m));
+    } catch (e) {
+      console.warn('LocalStorage save warning:', e);
+    }
+  };
+
+  // Helper to save updated state to the server
+  const persistToServer = async (p: ProjectProfile, t: Topic[], v: ProjectVideo[], m: TeamMember[]) => {
+    const newTimestamp = Date.now().toString();
+    serverUpdatedAtRef.current = newTimestamp;
+    saveToLocalStorage(p, t, v, m);
+
+    try {
+      await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile: p,
+          topics: t,
+          videos: v,
+          members: m,
+          updatedAt: newTimestamp
         })
-        .catch(err => console.log('Using local data fallback', err));
+      });
+    } catch (err) {
+      console.error('Failed to save to server:', err);
+    }
+  };
+
+  // Sync latest state from server
+  const fetchLatestFromServer = async () => {
+    try {
+      const res = await fetch('/api/data?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data) {
+        if (!isInitialSyncDoneRef.current) {
+          isInitialSyncDoneRef.current = true;
+          persistToServer(profile, topics, videos, members);
+        }
+        return;
+      }
+
+      if (data.updatedAt && data.updatedAt !== serverUpdatedAtRef.current) {
+        serverUpdatedAtRef.current = data.updatedAt;
+        if (data.profile) setProfile(data.profile);
+        if (data.topics && Array.isArray(data.topics) && data.topics.length > 0) setTopics(data.topics);
+        if (data.videos && Array.isArray(data.videos)) setVideos(data.videos);
+        if (data.members && Array.isArray(data.members) && data.members.length > 0) setMembers(data.members);
+        saveToLocalStorage(
+          data.profile || profile,
+          data.topics || topics,
+          data.videos || videos,
+          data.members || members
+        );
+      }
+      isInitialSyncDoneRef.current = true;
+    } catch (err) {
+      console.error('Error fetching latest from server:', err);
+    }
+  };
+
+  // Sync on mount, 2-second interval polling, and window focus/visibilitychange
+  useEffect(() => {
+    fetchLatestFromServer();
+
+    const intervalId = setInterval(() => {
+      fetchLatestFromServer();
+    }, 2000);
+
+    const handleFocusOrVisible = () => {
+      if (!document.hidden) {
+        fetchLatestFromServer();
+      }
     };
 
-    // Initial fetch
-    syncFromServer(false);
-
-    // Poll every 3 seconds for cross-device real-time sync
-    const intervalId = setInterval(() => {
-      syncFromServer(true);
-    }, 3000);
-
-    // Sync on window focus (when switching to smartphone tab/app)
-    const handleFocus = () => syncFromServer(false);
-    window.addEventListener('focus', handleFocus);
+    window.addEventListener('focus', handleFocusOrVisible);
+    document.addEventListener('visibilitychange', handleFocusOrVisible);
 
     return () => {
       clearInterval(intervalId);
-      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('focus', handleFocusOrVisible);
+      document.removeEventListener('visibilitychange', handleFocusOrVisible);
     };
   }, []);
 
-  // Save to localStorage and sync to server when data changes
-  useEffect(() => {
-    const payload = { profile, topics, videos, members };
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-    localStorage.setItem(STORAGE_KEYS.TOPICS, JSON.stringify(topics));
-    localStorage.setItem(STORAGE_KEYS.VIDEOS, JSON.stringify(videos));
-    localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
-
-    const timer = setTimeout(() => {
-      fetch('/api/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(err => console.error('Failed to sync to server:', err));
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [profile, topics, videos, members]);
-
   // Profile operations
   const updateProfile = (updated: Partial<ProjectProfile>) => {
-    setProfile(prev => ({ ...prev, ...updated }));
+    setProfile(prev => {
+      const next = { ...prev, ...updated };
+      persistToServer(next, topics, videos, members);
+      return next;
+    });
   };
 
   const addCharacteristic = (text: string) => {
     if (!text.trim()) return;
-    setProfile(prev => ({
-      ...prev,
-      characteristics: [...prev.characteristics, text.trim()]
-    }));
+    setProfile(prev => {
+      const next = { ...prev, characteristics: [...prev.characteristics, text.trim()] };
+      persistToServer(next, topics, videos, members);
+      return next;
+    });
   };
 
   const editCharacteristic = (index: number, newText: string) => {
@@ -244,15 +286,21 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setProfile(prev => {
       const updated = [...prev.characteristics];
       updated[index] = newText.trim();
-      return { ...prev, characteristics: updated };
+      const next = { ...prev, characteristics: updated };
+      persistToServer(next, topics, videos, members);
+      return next;
     });
   };
 
   const deleteCharacteristic = (index: number) => {
-    setProfile(prev => ({
-      ...prev,
-      characteristics: prev.characteristics.filter((_, i) => i !== index)
-    }));
+    setProfile(prev => {
+      const next = {
+        ...prev,
+        characteristics: prev.characteristics.filter((_, i) => i !== index)
+      };
+      persistToServer(next, topics, videos, members);
+      return next;
+    });
   };
 
   // Topics operations
@@ -261,15 +309,27 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ...topicData,
       id: 'topic_' + Date.now().toString(36)
     };
-    setTopics(prev => [newTopic, ...prev]);
+    setTopics(prev => {
+      const next = [newTopic, ...prev];
+      persistToServer(profile, next, videos, members);
+      return next;
+    });
   };
 
   const updateTopic = (id: string, topicData: Partial<Topic>) => {
-    setTopics(prev => prev.map(t => (t.id === id ? { ...t, ...topicData } : t)));
+    setTopics(prev => {
+      const next = prev.map(t => (t.id === id ? { ...t, ...topicData } : t));
+      persistToServer(profile, next, videos, members);
+      return next;
+    });
   };
 
   const deleteTopic = (id: string) => {
-    setTopics(prev => prev.filter(t => t.id !== id));
+    setTopics(prev => {
+      const next = prev.filter(t => t.id !== id);
+      persistToServer(profile, next, videos, members);
+      return next;
+    });
     if (selectedTopicId === id && topics.length > 1) {
       const remaining = topics.filter(t => t.id !== id);
       if (remaining[0]) setSelectedTopicId(remaining[0].id);
@@ -282,15 +342,27 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ...videoData,
       id: 'vid_' + Date.now().toString(36)
     };
-    setVideos(prev => [newVideo, ...prev]);
+    setVideos(prev => {
+      const next = [newVideo, ...prev];
+      persistToServer(profile, topics, next, members);
+      return next;
+    });
   };
 
   const updateVideo = (id: string, videoData: Partial<ProjectVideo>) => {
-    setVideos(prev => prev.map(v => (v.id === id ? { ...v, ...videoData } : v)));
+    setVideos(prev => {
+      const next = prev.map(v => (v.id === id ? { ...v, ...videoData } : v));
+      persistToServer(profile, topics, next, members);
+      return next;
+    });
   };
 
   const deleteVideo = (id: string) => {
-    setVideos(prev => prev.filter(v => v.id !== id));
+    setVideos(prev => {
+      const next = prev.filter(v => v.id !== id);
+      persistToServer(profile, topics, next, members);
+      return next;
+    });
     if (activeVideoForModal?.id === id) {
       setActiveVideoForModal(null);
     }
@@ -302,15 +374,27 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ...memberData,
       id: 'mem_' + Date.now().toString(36)
     };
-    setMembers(prev => [...prev, newMember]);
+    setMembers(prev => {
+      const next = [...prev, newMember];
+      persistToServer(profile, topics, videos, next);
+      return next;
+    });
   };
 
   const updateMember = (id: string, memberData: Partial<TeamMember>) => {
-    setMembers(prev => prev.map(m => (m.id === id ? { ...m, ...memberData } : m)));
+    setMembers(prev => {
+      const next = prev.map(m => (m.id === id ? { ...m, ...memberData } : m));
+      persistToServer(profile, topics, videos, next);
+      return next;
+    });
   };
 
   const deleteMember = (id: string) => {
-    setMembers(prev => prev.filter(m => m.id !== id));
+    setMembers(prev => {
+      const next = prev.filter(m => m.id !== id);
+      persistToServer(profile, topics, videos, next);
+      return next;
+    });
   };
 
   // Reset
@@ -324,6 +408,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     localStorage.removeItem(STORAGE_KEYS.TOPICS);
     localStorage.removeItem(STORAGE_KEYS.VIDEOS);
     localStorage.removeItem(STORAGE_KEYS.MEMBERS);
+    persistToServer(INITIAL_PROJECT_PROFILE, INITIAL_TOPICS, INITIAL_VIDEOS, INITIAL_TEAM_MEMBERS);
   };
 
   return (
