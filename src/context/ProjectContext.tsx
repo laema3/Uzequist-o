@@ -46,6 +46,13 @@ interface ProjectContextType {
 
   // Reset
   resetAllToDefault: () => void;
+
+  // Admin Auth
+  isAdminAuthenticated: boolean;
+  loginAdmin: (email: string, pass: string) => boolean;
+  logoutAdmin: () => void;
+  showLoginModal: boolean;
+  setShowLoginModal: (show: boolean) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -62,6 +69,36 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [deviceMode, setDeviceMode] = useState<'responsive' | 'smartphone' | 'tablet'>('responsive');
   const [selectedTopicId, setSelectedTopicId] = useState<string>('cultura-artesanato');
   const [activeVideoForModal, setActiveVideoForModal] = useState<ProjectVideo | null>(null);
+
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('feiranacoes_admin_auth') === 'true';
+  });
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+
+  const loginAdmin = (email: string, pass: string): boolean => {
+    if (email.trim().toLowerCase() === 'laura@gmai.com' && pass === '290912') {
+      setIsAdminAuthenticated(true);
+      localStorage.setItem('feiranacoes_admin_auth', 'true');
+      setShowLoginModal(false);
+      setCurrentView('admin');
+      return true;
+    }
+    return false;
+  };
+
+  const logoutAdmin = () => {
+    setIsAdminAuthenticated(false);
+    localStorage.removeItem('feiranacoes_admin_auth');
+    setCurrentView('visitor');
+  };
+
+  const handleSetCurrentView = (view: 'visitor' | 'admin') => {
+    if (view === 'admin' && !isAdminAuthenticated) {
+      setShowLoginModal(true);
+    } else {
+      setCurrentView(view);
+    }
+  };
 
   const [profile, setProfile] = useState<ProjectProfile>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PROFILE) || localStorage.getItem('feiranacoes_profile_v1');
@@ -250,7 +287,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <ProjectContext.Provider
       value={{
         currentView,
-        setCurrentView,
+        setCurrentView: handleSetCurrentView,
         deviceMode,
         setDeviceMode,
         selectedTopicId,
@@ -274,7 +311,12 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addMember,
         updateMember,
         deleteMember,
-        resetAllToDefault
+        resetAllToDefault,
+        isAdminAuthenticated,
+        loginAdmin,
+        logoutAdmin,
+        showLoginModal,
+        setShowLoginModal
       }}
     >
       {children}

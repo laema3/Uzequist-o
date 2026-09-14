@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { VisitorView } from './components/VisitorView';
 import { AdminPanel } from './components/AdminPanel';
 import { VideoModal } from './components/VideoModal';
+import { AdminLoginModal } from './components/AdminLoginModal';
 
 const AppContent: React.FC = () => {
   const { currentView, deviceMode, activeVideoForModal, setActiveVideoForModal } = useProject();
@@ -49,6 +50,9 @@ const AppContent: React.FC = () => {
         video={activeVideoForModal}
         onClose={() => setActiveVideoForModal(null)}
       />
+
+      {/* Admin Login Modal */}
+      <AdminLoginModal />
     </div>
   );
 };
