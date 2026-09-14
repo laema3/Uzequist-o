@@ -43,31 +43,11 @@ export const VisitorView: React.FC = () => {
     topics,
     videos,
     members,
-    updateMember,
     selectedTopicId,
     setSelectedTopicId,
     setActiveVideoForModal,
     setCurrentView
   } = useProject();
-
-  // Team member photo upload state
-  const [uploadingMemberId, setUploadingMemberId] = useState<string | null>(null);
-  const [dragOverMemberId, setDragOverMemberId] = useState<string | null>(null);
-  const [memberPhotoToast, setMemberPhotoToast] = useState<string | null>(null);
-
-  const handleVisitorPhotoUpload = async (memberId: string, memberName: string, file: File) => {
-    try {
-      setUploadingMemberId(memberId);
-      const dataUrl = await processImageFile(file);
-      updateMember(memberId, { photoUrl: dataUrl });
-      setMemberPhotoToast(`Foto de ${memberName} atualizada com sucesso pelo arquivo!`);
-      setTimeout(() => setMemberPhotoToast(null), 4000);
-    } catch (err: any) {
-      alert(err?.message || 'Erro ao processar imagem do arquivo.');
-    } finally {
-      setUploadingMemberId(null);
-    }
-  };
 
   // Recipe checklist state
   const [checkedIngredients, setCheckedIngredients] = useState<Record<string, boolean>>({});
@@ -1024,111 +1004,24 @@ export const VisitorView: React.FC = () => {
             </button>
           </div>
 
-          {/* Notificação de Sucesso */}
-          {memberPhotoToast && (
-            <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-sm flex items-center justify-between gap-3 shadow-xs animate-fade-in">
-              <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-emerald-600 shrink-0" />
-                <span>{memberPhotoToast}</span>
-              </div>
-              <button
-                onClick={() => setMemberPhotoToast(null)}
-                className="text-emerald-700 hover:text-emerald-900 text-xs font-bold underline cursor-pointer"
-              >
-                Fechar
-              </button>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
             {members.map(member => {
-              const isUploadingThis = uploadingMemberId === member.id;
-              const isDragOver = dragOverMemberId === member.id;
-
               return (
                 <div
                   key={member.id}
                   id={`card-membro-${member.id}`}
-                  className={`bg-[#0c2840] rounded-2xl border p-6 shadow-xs hover:shadow-lg transition-all flex flex-col items-center text-center group ${
-                    isDragOver ? 'border-sky-500 ring-4 ring-sky-200' : 'border-sky-800/60 hover:border-sky-400'
-                  }`}
+                  className="bg-[#0c2840] rounded-2xl border border-sky-800/60 p-6 shadow-xs hover:shadow-lg transition-all flex flex-col items-center text-center group"
                 >
-                  {/* Photo Container com Troca por Arquivo */}
-                  <div className="relative mb-3">
-                    <div
-                      className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 transition-all bg-sky-50 shadow-xs cursor-pointer ${
-                        isDragOver
-                          ? 'border-sky-600 scale-105 ring-4 ring-sky-200'
-                          : 'border-sky-800/60 group-hover:border-sky-500'
-                      }`}
-                      title="Clique para abrir o explorador de arquivos ou arraste uma foto"
-                      onClick={() => document.getElementById(`visitor-photo-input-${member.id}`)?.click()}
-                      onDragOver={e => {
-                        e.preventDefault();
-                        setDragOverMemberId(member.id);
-                      }}
-                      onDragLeave={() => setDragOverMemberId(null)}
-                      onDrop={e => {
-                        e.preventDefault();
-                        setDragOverMemberId(null);
-                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                          handleVisitorPhotoUpload(member.id, member.name, e.dataTransfer.files[0]);
-                        }
-                      }}
-                    >
+                  {/* Photo Container */}
+                  <div className="relative mb-4">
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 border-sky-700/60 bg-sky-950 shadow-xs">
                       <img
                         src={member.photoUrl}
                         alt={member.name}
-                        className={`w-full h-full object-cover transition-transform duration-300 ${
-                          isUploadingThis ? 'opacity-30' : 'group-hover:scale-105'
-                        }`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-
-                      {/* Hover Overlay */}
-                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs font-bold rounded-full">
-                        <FolderOpen className="w-5 h-5 mb-1" />
-                        <span>Trocar foto</span>
-                      </div>
-
-                      {/* Loading state */}
-                      {isUploadingThis && (
-                        <div className="absolute inset-0 bg-sky-950/70 flex items-center justify-center text-white rounded-full">
-                          <RefreshCw className="w-6 h-6 animate-spin text-white" />
-                        </div>
-                      )}
                     </div>
-
-                    {/* Botão Flutuante da Câmera no Canto da Foto */}
-                    <label
-                      htmlFor={`visitor-photo-input-${member.id}`}
-                      className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-sky-900 hover:bg-sky-950 text-white flex items-center justify-center shadow-md border-2 border-white cursor-pointer transition-transform hover:scale-110 z-10"
-                      title="Selecionar foto no explorador de arquivos"
-                    >
-                      <Camera className="w-4 h-4" />
-                    </label>
-
-                    <input
-                      type="file"
-                      id={`visitor-photo-input-${member.id}`}
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={e => {
-                        if (e.target.files && e.target.files[0]) {
-                          handleVisitorPhotoUpload(member.id, member.name, e.target.files[0]);
-                          e.target.value = '';
-                        }
-                      }}
-                    />
                   </div>
-
-                  {/* Botão Trocar Foto */}
-                  <label
-                    htmlFor={`visitor-photo-input-${member.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-900 text-xs font-bold transition-colors cursor-pointer border border-sky-800/60 mb-3 shadow-2xs"
-                  >
-                    <FolderOpen className="w-3.5 h-3.5 text-sky-700" />
-                    <span>Trocar Foto</span>
-                  </label>
 
                   {/* Name */}
                   <h3 className="font-bold text-white text-lg sm:text-xl mb-1">

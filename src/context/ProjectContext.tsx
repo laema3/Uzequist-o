@@ -76,7 +76,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
 
   const loginAdmin = (email: string, pass: string): boolean => {
-    if (email.trim().toLowerCase() === 'laura@gmai.com' && pass === '290912') {
+    if (email.trim().toLowerCase() === 'laura@gmail.com' && pass === '290912') {
       setIsAdminAuthenticated(true);
       localStorage.setItem('feiranacoes_admin_auth', 'true');
       setShowLoginModal(false);
