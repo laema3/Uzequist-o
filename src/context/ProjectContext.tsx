@@ -167,19 +167,44 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return INITIAL_TEAM_MEMBERS;
   });
 
-  // Sync with server API on mount
+  // Sync with server API on mount, polling, and window focus
   useEffect(() => {
-    fetch('/api/data')
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          if (data.profile) setProfile(data.profile);
-          if (data.topics && Array.isArray(data.topics) && data.topics.length > 0) setTopics(data.topics);
-          if (data.videos && Array.isArray(data.videos)) setVideos(data.videos);
-          if (data.members && Array.isArray(data.members) && data.members.length > 0) setMembers(data.members);
-        }
-      })
-      .catch(err => console.log('Using local data fallback', err));
+    let lastServerUpdatedAt = '';
+
+    const syncFromServer = (isPolling = false) => {
+      fetch('/api/data')
+        .then(res => res.json())
+        .then(data => {
+          if (data) {
+            // If polling and server updatedAt is newer or different, update state
+            if (!isPolling || (data.updatedAt && data.updatedAt !== lastServerUpdatedAt)) {
+              if (data.updatedAt) lastServerUpdatedAt = data.updatedAt;
+              if (data.profile) setProfile(data.profile);
+              if (data.topics && Array.isArray(data.topics) && data.topics.length > 0) setTopics(data.topics);
+              if (data.videos && Array.isArray(data.videos)) setVideos(data.videos);
+              if (data.members && Array.isArray(data.members) && data.members.length > 0) setMembers(data.members);
+            }
+          }
+        })
+        .catch(err => console.log('Using local data fallback', err));
+    };
+
+    // Initial fetch
+    syncFromServer(false);
+
+    // Poll every 3 seconds for cross-device real-time sync
+    const intervalId = setInterval(() => {
+      syncFromServer(true);
+    }, 3000);
+
+    // Sync on window focus (when switching to smartphone tab/app)
+    const handleFocus = () => syncFromServer(false);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   // Save to localStorage and sync to server when data changes
